@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-from functools import wraps
 from functools import partial
 from os import path
-from jira import JIRA
 import click
-from click import echo
 import yaml
+
 
 def configuation_option(*param_decls, **attrs):
     def decorator(f):
@@ -16,7 +14,7 @@ def configuation_option(*param_decls, **attrs):
                     if not ctx.default_map:
                         ctx.default_map = {}
                     config_data = yaml.load(f)
-                    for k,v in config_data.items():
+                    for k, v in config_data.items():
                         ctx.default_map[k] = str(v)
             if saved_callback:
                 return saved_callback(ctx, param, value)
