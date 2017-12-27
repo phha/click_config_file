@@ -3,27 +3,32 @@
 from functools import partial
 from os import path
 import click
-import yaml
 
+def parse_config_file(file_name):
+    with click.open_file(file_name, 'r') as f:
+        return eval("{{{}}}".format(f.read()))
 
 def configuation_option(*param_decls, **attrs):
     def decorator(f):
-        def callback(saved_callback, ctx, param, value):
-            if value is not None and path.isfile(value):
-                with open(value) as f:
-                    if not ctx.default_map:
-                        ctx.default_map = {}
-                    config_data = yaml.load(f)
-                    for k, v in config_data.items():
-                        ctx.default_map[k] = str(v)
+        def callback(saved_callback, app_name, config_file_name, ctx, param, value):
+            if not value:
+                if not app_name:
+                    app_name = ctx.info_name
+                value = path.join(click.get_app_dir(app_name), config_file_name)
+            if path.isfile(value):
+                config = parse_config_file(value)
+                if not ctx.default_map:
+                    ctx.default_map = {}
+                for k, v in config.items():
+                    ctx.default_map[k] = v
             if saved_callback:
                 return saved_callback(ctx, param, value)
+            else:
+                return value
 
         attrs.setdefault('is_eager', True)
-        app_name, default_file = attrs.pop('config_file', None)
-        if default_file:
-            attrs['default'] = path.join(
-                    click.get_app_dir(app_name), default_file)
+        app_name = attrs.pop('app_name', None)
+        config_file_name = attrs.pop('config_file_name', 'config')
         path_default_params = {'exists': False,
                                'file_okay': True,
                                'dir_okay': False,
@@ -34,6 +39,10 @@ def configuation_option(*param_decls, **attrs):
         for k, v in path_default_params.items():
             path_params[k] = attrs.pop(k, v)
         attrs['type'] = click.Path(**path_params)
-        attrs['callback'] = partial(callback, attrs.get('callback', None))
+        attrs['callback'] = partial(
+            callback,
+            attrs.get('callback', None),
+            app_name,
+            config_file_name)
         return click.option(*(param_decls or ('--config',)), **attrs)(f)
     return decorator
