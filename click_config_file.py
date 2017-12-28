@@ -3,22 +3,23 @@
 from functools import partial
 from os import path
 import click
+import configobj
 
 def parse_config_file(file_name):
-    with click.open_file(file_name, 'r') as f:
-        return eval("{{{}}}".format(f.read()))
+    return configobj.ConfigObj(file_name, unrepr=True)
 
-def configuation_option(*param_decls, **attrs):
+def configuration_option(*param_decls, **attrs):
     def decorator(f):
         def callback(saved_callback, app_name, config_file_name, ctx, param, value):
+            if not ctx.default_map:
+                ctx.default_map = {}
             if not value:
                 if not app_name:
                     app_name = ctx.info_name
                 value = path.join(click.get_app_dir(app_name), config_file_name)
+            ctx.default_map.setdefault(param, value)
             if path.isfile(value):
                 config = parse_config_file(value)
-                if not ctx.default_map:
-                    ctx.default_map = {}
                 for k, v in config.items():
                     ctx.default_map[k] = v
             if saved_callback:

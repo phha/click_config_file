@@ -9,6 +9,7 @@ url = "https://pypi.python.org/simple"
 
 click = "*"
 "e1839a8" = {editable = true, path = "."}
+configobj = "*"
 
 
 [dev-packages]
