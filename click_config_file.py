@@ -5,18 +5,22 @@ from os import path
 import click
 import configobj
 
+
 def parse_config_file(file_name):
     return configobj.ConfigObj(file_name, unrepr=True)
 
+
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
-        def callback(saved_callback, app_name, config_file_name, ctx, param, value):
+        def callback(saved_callback, app_name,
+                     config_file_name, ctx, param, value):
             if not ctx.default_map:
                 ctx.default_map = {}
             if not value:
                 if not app_name:
                     app_name = ctx.info_name
-                value = path.join(click.get_app_dir(app_name), config_file_name)
+                value = path.join(click.get_app_dir(app_name),
+                                  config_file_name)
             ctx.default_map.setdefault(param, value)
             if path.isfile(value):
                 config = parse_config_file(value)

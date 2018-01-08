@@ -14,3 +14,5 @@ configobj = "*"
 
 [dev-packages]
 
+neovim = "*"
+ptipython = "*"
