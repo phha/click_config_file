@@ -11,35 +11,47 @@ In the simplest case, given this application
 
 ```python
 @click.command()
-@click.option('--name' default='World' help='Who to greet')
+@click.option('--name', default='World', help='Who to greet.')
 @click_config_file.configuration_option()
 def hello(name, config):
   click.echo('Hello {}!'.format(name))
 ```
 
-and this configuration file:
+Running `hello --help` will give you this:
 
 ```
-name="Universe"
+Usage: hello [OPTIONS]
+
+Options:
+  --name TEXT    Who to greet.
+  --config PATH  Read configuration from PATH.
+  --help         Show this message and exit.
 ```
 
-Calling `hello` will do what you expect:
-
-```
-Hello Universe!
-```
-
-If the configuration file does not exist, it will also do what you expect:
+If the configuration file does not exist, running `hello` will do what you
+expect:
 
 ```
 Hello World!
 ```
 
-And calling `hello --name Multiverse` will override the configuration file
+With this configuration file:
+
+```
+name="Universe"
+```
+
+Calling `hello` will also do what you expect:
+
+```
+Hello Universe!
+```
+
+Calling `hello --name Multiverse` will override the configuration file
 setting, as it should:
 
 ```
-Hello Mutliverse!
+Hello Multiverse!
 ```
 
 The default name for the configuration file option is `--config`.
@@ -48,11 +60,11 @@ variable, the module will search for a file named `config` in the
 appropriate directory for your OS.
 
 Command line and environment options will override the configuration
-file options. Configuration file options override default options. So to
-summarize the resolution order for a given option is
+file options. Configuration file options override default options. So
+the resolution order for a given option is:
 CLI > Environment > Configuration file > Default.
 
-Configuration files are formatted according to
+Configuration files should be formatted according to
 [Configobj's unrepr mode](http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode).
 
 Why?
