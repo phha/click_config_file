@@ -32,6 +32,7 @@ def configuration_option(*param_decls, **attrs):
                 return value
 
         attrs.setdefault('is_eager', True)
+        attrs.setdefault('help', 'read configuration from PATH')
         app_name = attrs.pop('app_name', None)
         config_file_name = attrs.pop('config_file_name', 'config')
         path_default_params = {'exists': False,
