@@ -25,10 +25,7 @@ def configuration_option(*param_decls, **attrs):
                 config = parse_config_file(value)
                 for k, v in config.items():
                     ctx.default_map[k] = v
-            if saved_callback:
-                return saved_callback(ctx, param, value)
-            else:
-                return value
+            return saved_callback(ctx, param, value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from PATH.')
