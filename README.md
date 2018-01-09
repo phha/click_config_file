@@ -13,7 +13,7 @@ In the simplest case, given this application
 @click.command()
 @click.option('--name', default='World', help='Who to greet.')
 @click_config_file.configuration_option()
-def hello(name, config):
+def hello(name):
   click.echo('Hello {}!'.format(name))
 ```
 
