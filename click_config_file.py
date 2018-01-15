@@ -22,10 +22,15 @@ def configuration_option(*param_decls, **attrs):
             if not value:
                 value = default_value
             if path.isfile(value):
-                config = parse_config_file(value)
+                try:
+                    config = parse_config_file(value)
+                except Exception as e:
+                    raise click.BadOptionUsage(
+                        "Error reading configuration file: {}".format(e), ctx)
                 for k, v in config.items():
                     ctx.default_map[k] = v
-            return saved_callback(ctx, param, value) if saved_callback else value
+            return saved_callback(ctx, param,
+                                  value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from PATH.')
