@@ -4,11 +4,16 @@ import configobj
 
 
 class configobj_parser:
-    def __init__(self, unrepr=True):
+    def __init__(self, unrepr=True, section=None):
         self.unrepr = unrepr
+        self.section = section
 
     def __call__(self, file_path, cmd_name):
-        return configobj.ConfigObj(file_path, unrepr=self.unrepr)
+        config = configobj.ConfigObj(file_path, unrepr=self.unrepr)
+        if self.section:
+            config = config[self.section].dict()
+        return config
+
 
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
