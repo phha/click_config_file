@@ -4,10 +4,16 @@ Click config file
 This module provides configuration file support for
 [Click](http://click.pocoo.org/5/) applications.
 
-How?
-----
+Basic usage
+-----------
 
-In the simplest case, given this application
+click_config_file is designed to be a usable by simply adding the
+appropriate decorator to your command without having to supply any
+mandatory arguments.
+It comes with a set of sensible defaults that should just work for
+most cases.
+
+Given this application:
 
 ```python
 @click.command()
@@ -64,8 +70,27 @@ file options. Configuration file options override default options. So
 the resolution order for a given option is:
 CLI > Environment > Configuration file > Default.
 
-Configuration files should be formatted according to
+Supported file formats
+----------------------
+
+By default click_config_file supports files formatted according to
 [Configobj's unrepr mode](http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode).
+
+You can supply custom parser by setting the `parser` keyword argument. This argument expects a
+callable that will take the configuration file path and application name as arguments and
+returns a dictionary with the parsed configuration options. For example:
+
+```python
+
+def myparser(file_path, app_name):
+    return { 'name': "Universe" }
+
+@click.command()
+@click.option('--name', default='World')
+@click_config_file.configuration_option(parser=myparser)
+def hello(name):
+  click.echo('Hello {}!'.format(name))
+```
 
 Why?
 ----

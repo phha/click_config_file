@@ -3,14 +3,17 @@ import click
 import configobj
 
 
-def parse_config_file(file_name):
-    return configobj.ConfigObj(file_name, unrepr=True)
+class configobj_parser:
+    def __init__(self, unrepr=True):
+        self.unrepr = unrepr
 
+    def __call__(self, file_path, app_name):
+        return configobj.ConfigObj(file_path, unrepr=self.unrepr)
 
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
         def callback(ctx, param, value):
-            nonlocal app_name, config_file_name, saved_callback
+            nonlocal app_name, config_file_name, saved_callback, parser
             if not ctx.default_map:
                 ctx.default_map = {}
             if not app_name:
@@ -22,7 +25,7 @@ def configuration_option(*param_decls, **attrs):
                 value = default_value
             if os.path.isfile(value):
                 try:
-                    config = parse_config_file(value)
+                    config = parser(value, app_name)
                 except Exception as e:
                     raise click.BadOptionUsage(
                         "Error reading configuration file: {}".format(e), ctx)
@@ -35,6 +38,7 @@ def configuration_option(*param_decls, **attrs):
         attrs.setdefault('expose_value', False)
         app_name = attrs.pop('app_name', None)
         config_file_name = attrs.pop('config_file_name', 'config')
+        parser = attrs.pop('parser', configobj_parser())
         path_default_params = {
             'exists': False,
             'file_okay': True,
