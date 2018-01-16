@@ -7,25 +7,25 @@ class configobj_parser:
     def __init__(self, unrepr=True):
         self.unrepr = unrepr
 
-    def __call__(self, file_path, app_name):
+    def __call__(self, file_path, cmd_name):
         return configobj.ConfigObj(file_path, unrepr=self.unrepr)
 
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
         def callback(ctx, param, value):
-            nonlocal app_name, config_file_name, saved_callback, parser
+            nonlocal cmd_name, config_file_name, saved_callback, parser
             if not ctx.default_map:
                 ctx.default_map = {}
-            if not app_name:
-                app_name = ctx.info_name
+            if not cmd_name:
+                cmd_name = ctx.info_name
             default_value = os.path.join(
-                click.get_app_dir(app_name), config_file_name)
+                click.get_app_dir(cmd_name), config_file_name)
             param.default = default_value
             if not value:
                 value = default_value
             if os.path.isfile(value):
                 try:
-                    config = parser(value, app_name)
+                    config = parser(value, cmd_name)
                 except Exception as e:
                     raise click.BadOptionUsage(
                         "Error reading configuration file: {}".format(e), ctx)
@@ -36,7 +36,7 @@ def configuration_option(*param_decls, **attrs):
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from PATH.')
         attrs.setdefault('expose_value', False)
-        app_name = attrs.pop('app_name', None)
+        cmd_name = attrs.pop('cmd_name', None)
         config_file_name = attrs.pop('config_file_name', 'config')
         parser = attrs.pop('parser', configobj_parser())
         path_default_params = {
