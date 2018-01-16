@@ -20,7 +20,7 @@ Given this application:
 @click.option('--name', default='World', help='Who to greet.')
 @click_config_file.configuration_option()
 def hello(name):
-  click.echo('Hello {}!'.format(name))
+    click.echo('Hello {}!'.format(name))
 ```
 
 Running `hello --help` will give you this:
@@ -76,20 +76,26 @@ Supported file formats
 By default click_config_file supports files formatted according to
 [Configobj's unrepr mode](http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode).
 
-You can supply custom parser by setting the `parser` keyword argument. This argument expects a
-callable that will take the configuration file path and application name as arguments and
-returns a dictionary with the parsed configuration options. For example:
+You can supply a custom parser by setting the `parser` keyword argument. This argument expects a
+callable that will take the configuration file path and command name as arguments and
+returns a dictionary with the parsed configuration options.
+
+The command name is passed in order to allow for a shared configuration file divided by sections
+for each command.
+
+For example, this will read the configuration options from a shared JSON file:
 
 ```python
 
-def myparser(file_path, app_name):
-    return { 'name': "Universe" }
+def myparser(file_path, cmd_name):
+    with open(file_path) as config_data:
+        return json.load(config_data)[cmd_name]
 
 @click.command()
 @click.option('--name', default='World')
 @click_config_file.configuration_option(parser=myparser)
 def hello(name):
-  click.echo('Hello {}!'.format(name))
+    click.echo('Hello {}!'.format(name))
 ```
 
 Why?
