@@ -1,5 +1,4 @@
-from functools import partial
-from os import path
+import os
 import click
 import configobj
 
@@ -10,18 +9,18 @@ def parse_config_file(file_name):
 
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
-        def callback(saved_callback, app_name, config_file_name, ctx, param,
-                     value):
+        def callback(ctx, param, value):
+            nonlocal app_name, config_file_name, saved_callback
             if not ctx.default_map:
                 ctx.default_map = {}
             if not app_name:
                 app_name = ctx.info_name
-            default_value = path.join(
+            default_value = os.path.join(
                 click.get_app_dir(app_name), config_file_name)
             param.default = default_value
             if not value:
                 value = default_value
-            if path.isfile(value):
+            if os.path.isfile(value):
                 try:
                     config = parse_config_file(value)
                 except Exception as e:
@@ -29,8 +28,7 @@ def configuration_option(*param_decls, **attrs):
                         "Error reading configuration file: {}".format(e), ctx)
                 for k, v in config.items():
                     ctx.default_map[k] = v
-            return saved_callback(ctx, param,
-                                  value) if saved_callback else value
+            return saved_callback(ctx, param, value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from PATH.')
@@ -49,8 +47,8 @@ def configuration_option(*param_decls, **attrs):
         for k, v in path_default_params.items():
             path_params[k] = attrs.pop(k, v)
         attrs['type'] = click.Path(**path_params)
-        attrs['callback'] = partial(callback, attrs.get('callback', None),
-                                    app_name, config_file_name)
+        saved_callback = attrs.pop('callback', None)
+        attrs['callback'] = callback
         return click.option(*(param_decls or ('--config', )), **attrs)(f)
 
     return decorator
