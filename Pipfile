@@ -16,3 +16,5 @@ configobj = "*"
 
 neovim = "*"
 ptipython = "*"
+tox = {extras = ["pytest"]}
+pytest = "*"
