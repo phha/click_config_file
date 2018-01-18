@@ -76,9 +76,9 @@ Supported file formats
 By default click_config_file supports files formatted according to
 [Configobj's unrepr mode](http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode).
 
-You can supply a custom parser by setting the `parser` keyword argument. This argument expects a
-callable that will take the configuration file path and command name as arguments and
-returns a dictionary with the parsed configuration options.
+You can add support for additional configuration providers by setting the `provider` keyword
+argument. This argument expects a callable that will take the configuration file path and
+command name as arguments and returns a dictionary with the provided configuration options.
 
 The command name is passed in order to allow for a shared configuration file divided by sections
 for each command.
@@ -87,13 +87,13 @@ For example, this will read the configuration options from a shared JSON file:
 
 ```python
 
-def myparser(file_path, cmd_name):
+def myprovider(file_path, cmd_name):
     with open(file_path) as config_data:
         return json.load(config_data)[cmd_name]
 
 @click.command()
 @click.option('--name', default='World')
-@click_config_file.configuration_option(parser=myparser)
+@click_config_file.configuration_option(provider=myprovider)
 def hello(name):
     click.echo('Hello {}!'.format(name))
 ```

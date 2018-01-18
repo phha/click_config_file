@@ -3,7 +3,7 @@ import click
 import configobj
 
 
-class configobj_parser:
+class configobj_provider:
     def __init__(self, unrepr=True, section=None):
         self.unrepr = unrepr
         self.section = section
@@ -18,7 +18,7 @@ class configobj_parser:
 def configuration_option(*param_decls, **attrs):
     def decorator(f):
         def callback(ctx, param, value):
-            nonlocal cmd_name, config_file_name, saved_callback, parser
+            nonlocal cmd_name, config_file_name, saved_callback, provider
             if not ctx.default_map:
                 ctx.default_map = {}
             if not cmd_name:
@@ -28,13 +28,12 @@ def configuration_option(*param_decls, **attrs):
             param.default = default_value
             if not value:
                 value = default_value
-            if os.path.isfile(value):
-                try:
-                    config = parser(value, cmd_name)
-                except Exception as e:
-                    raise click.BadOptionUsage(
-                        "Error reading configuration file: {}".format(e), ctx)
-                ctx.default_map.update(config)
+            try:
+                config = provider(value, cmd_name)
+            except Exception as e:
+                raise click.BadOptionUsage(
+                    "Error reading configuration file: {}".format(e), ctx)
+            ctx.default_map.update(config)
             return saved_callback(ctx, param, value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
@@ -42,7 +41,7 @@ def configuration_option(*param_decls, **attrs):
         attrs.setdefault('expose_value', False)
         cmd_name = attrs.pop('cmd_name', None)
         config_file_name = attrs.pop('config_file_name', 'config')
-        parser = attrs.pop('parser', configobj_parser())
+        provider = attrs.pop('provider', configobj_provider())
         path_default_params = {
             'exists': False,
             'file_okay': True,

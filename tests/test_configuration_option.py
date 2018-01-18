@@ -168,15 +168,49 @@ def test_broken_config(runner, tmpdir):
     assert result.exit_code != 0
 
 
-def test_custom_parser(runner, cfgfile):
-    def mock_parser(path, name):
+def test_custom_provider_nofile(runner):
+    def mock_provider(path, name):
+        assert name == 'cli'
+        return {'who': 'World'}
+
+    @click.command()
+    @click.option('--who')
+    @configuration_option(provider=mock_provider)
+    def cli(who):
+        click.echo("Hello {}".format(who))
+
+    result = runner.invoke(cli)
+
+    assert not result.exception
+    assert result.output == 'Hello World\n'
+
+
+def test_custom_provider_raises_exception(runner):
+    def mock_provider(path, name):
+        assert name == 'cli'
+        raise click.BadOptionUsage('Provider')
+
+    @click.command()
+    @click.option('--who')
+    @configuration_option(provider=mock_provider)
+    def cli(who):
+        click.echo("Hello {}".format(who))
+
+    result = runner.invoke(cli)
+
+    assert result.exception
+    assert re.search(r'Provider', result.output) is not None
+
+
+def test_custom_provider(runner, cfgfile):
+    def mock_provider(path, name):
         assert path == str(cfgfile.realpath())
         assert name == 'cli'
         return {'who': 'World'}
 
     @click.command()
     @click.option('--who')
-    @configuration_option(parser=mock_parser)
+    @configuration_option(provider=mock_provider)
     def cli(who):
         click.echo("Hello {}".format(who))
 
@@ -233,3 +267,19 @@ def test_path_params_dir_okay_true(runner, tmpdir):
     ))
     assert not result.exception
     assert result.exit_code == 0
+
+def test_argument_string(runner):
+    def mock_provider(f, n):
+        return {'arg': 'foo'}
+
+    @click.command()
+    @click.argument('arg')
+    @configuration_option(provider=mock_provider)
+    def cli(arg):
+        click.echo(arg)
+
+    result = runner.invoke(cli)
+
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''.join(('foo', '\n',))
