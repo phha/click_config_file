@@ -34,8 +34,7 @@ def configuration_option(*param_decls, **attrs):
                 except Exception as e:
                     raise click.BadOptionUsage(
                         "Error reading configuration file: {}".format(e), ctx)
-                for k, v in config.items():
-                    ctx.default_map[k] = v
+                ctx.default_map.update(config)
             return saved_callback(ctx, param, value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
@@ -50,11 +49,9 @@ def configuration_option(*param_decls, **attrs):
             'dir_okay': False,
             'writable': False,
             'readable': True,
-            'resolve_path': True
+            'resolve_path': False
         }
-        path_params = {}
-        for k, v in path_default_params.items():
-            path_params[k] = attrs.pop(k, v)
+        path_params = {k: attrs.pop(k, v) for k, v in path_default_params.items()}
         attrs['type'] = click.Path(**path_params)
         saved_callback = attrs.pop('callback', None)
         attrs['callback'] = callback

@@ -22,7 +22,7 @@ def test_defaults(runner):
     assert not result.exception
     assert result.output == 'Hello\n'
 
-    result = runner.invoke(cli, ('--help',))
+    result = runner.invoke(cli, ('--help', ))
     assert re.search(r'--config PATH\s+Read configuration from PATH\.',
                      result.output) is not None
 
@@ -36,12 +36,21 @@ def test_value(runner, tmpdir):
     result = runner.invoke(cli)
     assert not result.exception
     expected = os.path.join(click.get_app_dir('cli'), 'config')
-    assert result.output == ''.join((expected, '\n',))
+    assert result.output == ''.join((
+        expected,
+        '\n',
+    ))
 
     cfgfile = tmpdir.join('cfg')
-    result = runner.invoke(cli, ('--config', str(cfgfile),))
+    result = runner.invoke(cli, (
+        '--config',
+        str(cfgfile),
+    ))
     assert not result.exception
-    assert result.output == ''.join((str(cfgfile.realpath()), '\n',))
+    assert result.output == ''.join((
+        str(cfgfile.realpath()),
+        '\n',
+    ))
 
 
 def test_custom_default_value(runner, tmpdir):
@@ -54,7 +63,10 @@ def test_custom_default_value(runner, tmpdir):
 
     result = runner.invoke(cli)
     assert not result.exception
-    assert result.output == ''.join((str(cfgfile.realpath()), '\n',))
+    assert result.output == ''.join((
+        str(cfgfile.realpath()),
+        '\n',
+    ))
 
 
 def test_config_precedence_no_config(runner):
@@ -76,7 +88,10 @@ def test_config_precedence_unset(runner, cfgfile):
     def cli(whom):
         click.echo("Hello {}".format(whom))
 
-    result = runner.invoke(cli, ('--config', str(cfgfile),))
+    result = runner.invoke(cli, (
+        '--config',
+        str(cfgfile),
+    ))
     assert not result.exception
     assert result.output == 'Hello World\n'
 
@@ -88,7 +103,12 @@ def test_config_precedence_cli(runner, cfgfile):
     def cli(who):
         click.echo("Hello {}".format(who))
 
-    result = runner.invoke(cli, ('--who', 'Multiverse', '--config', str(cfgfile),))
+    result = runner.invoke(cli, (
+        '--who',
+        'Multiverse',
+        '--config',
+        str(cfgfile),
+    ))
     assert not result.exception
     assert result.output == 'Hello Multiverse\n'
 
@@ -100,11 +120,17 @@ def test_config_precedence_envvar_not_set(runner, cfgfile):
     def cli(who):
         click.echo("Hello {}".format(who))
 
-    result = runner.invoke(cli, ('--config', str(cfgfile),), env={})
+    result = runner.invoke(
+        cli, (
+            '--config',
+            str(cfgfile),
+        ), env={})
     assert not result.exception
     assert result.output == 'Hello Universe\n'
 
-@pytest.mark.xfail(reason="This is a bug in click, see https://github.com/pallets/click/issues/873")
+
+@pytest.mark.xfail(reason="""This is a bug in click,
+              see https://github.com/pallets/click/issues/873""")
 def test_config_precedence_envvar_set(runner, cfgfile):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
@@ -112,7 +138,13 @@ def test_config_precedence_envvar_set(runner, cfgfile):
     def cli(who):
         click.echo("Hello {}".format(who))
 
-    result = runner.invoke(cli, ('--config', str(cfgfile),), env={'CLICK_TEST_WHO': 'You'})
+    result = runner.invoke(
+        cli, (
+            '--config',
+            str(cfgfile),
+        ), env={
+            'CLICK_TEST_WHO': 'You'
+        })
     assert not result.exception
     assert result.output == 'Hello You\n'
 
@@ -126,7 +158,10 @@ def test_broken_config(runner, tmpdir):
     cfgfile = tmpdir.join('config')
     cfgfile.write("Ceci n'est pas une config.")
 
-    result = runner.invoke(cli, ('--config', str(cfgfile),))
+    result = runner.invoke(cli, (
+        '--config',
+        str(cfgfile),
+    ))
     assert re.search(r'Error reading configuration file',
                      result.output) is not None
     assert result.exception
@@ -145,7 +180,10 @@ def test_custom_parser(runner, cfgfile):
     def cli(who):
         click.echo("Hello {}".format(who))
 
-    result = runner.invoke(cli, ('--config', str(cfgfile),))
+    result = runner.invoke(cli, (
+        '--config',
+        str(cfgfile),
+    ))
     assert not result.exception
     assert result.output == 'Hello World\n'
 
@@ -156,10 +194,42 @@ def test_custom_callback(runner):
         return 'bar'
 
     @click.command()
-    @configuration_option(expose_value=True, resolve_path=False, callback=mock_callback)
+    @configuration_option(
+        expose_value=True, resolve_path=False, callback=mock_callback)
     def cli(config):
         click.echo(config)
 
-    result = runner.invoke(cli, ('--config', 'foo',))
+    result = runner.invoke(cli, (
+        '--config',
+        'foo',
+    ))
     assert not result.exception
     assert result.output == 'bar\n'
+
+
+def test_path_params_dir_okay_default(runner, tmpdir):
+    @click.command()
+    @configuration_option()
+    def cli():
+        pass
+
+    result = runner.invoke(cli, (
+        '--config',
+        str(tmpdir),
+    ))
+    assert result.exception
+    assert result.exit_code != 0
+
+
+def test_path_params_dir_okay_true(runner, tmpdir):
+    @click.command()
+    @configuration_option(dir_okay=True)
+    def cli():
+        pass
+
+    result = runner.invoke(cli, (
+        '--config',
+        str(tmpdir),
+    ))
+    assert not result.exception
+    assert result.exit_code == 0
