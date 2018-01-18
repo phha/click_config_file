@@ -98,6 +98,11 @@ def hello(name):
     click.echo('Hello {}!'.format(name))
 ```
 
+Installation
+------------
+
+`pip install git+https://github.com/phha/click_config_file`
+
 Why?
 ----
 
