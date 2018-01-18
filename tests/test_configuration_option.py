@@ -53,12 +53,11 @@ def test_value(runner, tmpdir):
     ))
 
 
-def test_custom_default_value(runner, tmpdir):
-    cfgfile = tmpdir.join('config')
-
+def test_custom_default_value(runner, cfgfile):
     @click.command()
     @configuration_option(default=str(cfgfile), expose_value=True)
     def cli(config):
+        assert config == str(cfgfile)
         click.echo(config)
 
     result = runner.invoke(cli)
@@ -74,6 +73,7 @@ def test_config_precedence_no_config(runner):
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option()
     def cli(who):
+        assert who == "World"
         click.echo("Hello {}".format(who))
 
     result = runner.invoke(cli)
@@ -86,6 +86,7 @@ def test_config_precedence_unset(runner, cfgfile):
     @click.option('--whom', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option()
     def cli(whom):
+        assert whom == "World"
         click.echo("Hello {}".format(whom))
 
     result = runner.invoke(cli, (
@@ -101,6 +102,7 @@ def test_config_precedence_cli(runner, cfgfile):
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option()
     def cli(who):
+        assert who == 'Multiverse'
         click.echo("Hello {}".format(who))
 
     result = runner.invoke(cli, (
@@ -118,6 +120,7 @@ def test_config_precedence_envvar_not_set(runner, cfgfile):
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option()
     def cli(who):
+        assert who == 'Universe'
         click.echo("Hello {}".format(who))
 
     result = runner.invoke(
@@ -136,6 +139,7 @@ def test_config_precedence_envvar_set(runner, cfgfile):
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option()
     def cli(who):
+        assert who == 'You'
         click.echo("Hello {}".format(who))
 
     result = runner.invoke(
@@ -153,7 +157,7 @@ def test_broken_config(runner, tmpdir):
     @click.command()
     @configuration_option()
     def cli():
-        pass
+        pytest.fail("Callback should not be called if config is broken")
 
     cfgfile = tmpdir.join('config')
     cfgfile.write("Ceci n'est pas une config.")
@@ -177,6 +181,7 @@ def test_custom_provider_nofile(runner):
     @click.option('--who')
     @configuration_option(provider=mock_provider)
     def cli(who):
+        assert who == 'World'
         click.echo("Hello {}".format(who))
 
     result = runner.invoke(cli)
@@ -194,7 +199,7 @@ def test_custom_provider_raises_exception(runner):
     @click.option('--who')
     @configuration_option(provider=mock_provider)
     def cli(who):
-        click.echo("Hello {}".format(who))
+        pytest.fail('Callback should not be invoked if provider raises exception')
 
     result = runner.invoke(cli)
 
@@ -206,13 +211,14 @@ def test_custom_provider(runner, cfgfile):
     def mock_provider(path, name):
         assert path == str(cfgfile.realpath())
         assert name == 'cli'
-        return {'who': 'World'}
+        return {'whom': 'World'}
 
     @click.command()
-    @click.option('--who')
+    @click.option('--whom')
     @configuration_option(provider=mock_provider)
-    def cli(who):
-        click.echo("Hello {}".format(who))
+    def cli(whom):
+        assert whom == 'World'
+        click.echo("Hello {}".format(whom))
 
     result = runner.invoke(cli, (
         '--config',
@@ -231,6 +237,7 @@ def test_custom_callback(runner):
     @configuration_option(
         expose_value=True, resolve_path=False, callback=mock_callback)
     def cli(config):
+        assert config == 'bar'
         click.echo(config)
 
     result = runner.invoke(cli, (
@@ -245,7 +252,7 @@ def test_path_params_dir_okay_default(runner, tmpdir):
     @click.command()
     @configuration_option()
     def cli():
-        pass
+        pytest.fail('Callback should not be invoked')
 
     result = runner.invoke(cli, (
         '--config',
@@ -268,18 +275,67 @@ def test_path_params_dir_okay_true(runner, tmpdir):
     assert not result.exception
     assert result.exit_code == 0
 
-def test_argument_string(runner):
-    def mock_provider(f, n):
-        return {'arg': 'foo'}
+def test_argument_basic(runner, cfgfile):
+    cfgfile.write('arg = "foo"')
 
     @click.command()
     @click.argument('arg')
-    @configuration_option(provider=mock_provider)
+    @configuration_option()
     def cli(arg):
+        assert arg == 'foo'
         click.echo(arg)
 
-    result = runner.invoke(cli)
+    result = runner.invoke(cli, ['--config', str(cfgfile)])
 
     assert not result.exception
     assert result.exit_code == 0
     assert result.output == ''.join(('foo', '\n',))
+
+
+def test_argument_variadic(runner, cfgfile):
+    cfgfile.write('arg = ["foo", "bar"]')
+
+    @click.command()
+    @click.argument('arg', nargs=2)
+    @configuration_option()
+    def cli(arg):
+        assert arg == ('foo', 'bar')
+        for a in arg:
+            click.echo(a)
+
+    result = runner.invoke(cli, ['--config', str(cfgfile)])
+
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''.join(('foo', '\n', 'bar', '\n',))
+
+
+def test_argument_file(runner, cfgfile):
+    @click.command()
+    @click.argument('arg', type=click.File())
+    @configuration_option()
+    def cli(arg):
+        assert arg.read() == cfg
+
+    with runner.isolated_filesystem():
+        cfg = 'arg = "{}"'.format(cfgfile)
+        cfgfile.write(cfg)
+        result = runner.invoke(cli, ['--config', str(cfgfile)])
+        print(result.exception)
+        assert not result.exception
+        assert result.exit_code == 0
+
+
+def test_argument_path(runner, tmpdir, cfgfile):
+    cfgfile.write('arg = "{}"'.format(tmpdir))
+
+    @click.command()
+    @click.argument('arg')
+    @configuration_option()
+    def cli(arg):
+        assert arg == str(tmpdir)
+
+    result = runner.invoke(cli, ['--config', str(cfgfile)])
+
+    assert not result.exception
+    assert result.exit_code == 0
