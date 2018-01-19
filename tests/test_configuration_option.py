@@ -333,7 +333,7 @@ def test_argument_path(runner, tmpdir, cfgfile):
     @click.argument('arg')
     @configuration_option()
     def cli(arg):
-        assert arg == str(tmpdir)
+        assert click.format_filename(arg) == str(tmpdir)
 
     result = runner.invoke(cli, ['--config', str(cfgfile)])
 
