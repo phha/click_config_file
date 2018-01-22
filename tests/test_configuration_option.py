@@ -172,6 +172,26 @@ def test_broken_config(runner, tmpdir):
     assert result.exit_code != 0
 
 
+def test_exists_true(runner, tmpdir):
+    @click.command()
+    @configuration_option(exists=True)
+    def cli():
+        pass
+
+    path = tmpdir.join('config')
+    result = runner.invoke(cli, ('--config', str(path),))
+    assert result.exception
+    assert result.exit_code != 0
+    assert re.search(r'Path "{}" does not exist'.format(path),
+                     result.output) is not None
+
+    path.write("\n")
+    result = runner.invoke(cli, ('--config', str(path),))
+    print(result.output)
+    assert not result.exception
+    assert result.exit_code == 0
+
+
 def test_custom_provider_nofile(runner):
     def mock_provider(path, name):
         assert name == 'cli'
@@ -199,7 +219,8 @@ def test_custom_provider_raises_exception(runner):
     @click.option('--who')
     @configuration_option(provider=mock_provider)
     def cli(who):
-        pytest.fail('Callback should not be invoked if provider raises exception')
+        pytest.fail(
+            'Callback should not be invoked if provider raises exception')
 
     result = runner.invoke(cli)
 
@@ -275,6 +296,7 @@ def test_path_params_dir_okay_true(runner, tmpdir):
     assert not result.exception
     assert result.exit_code == 0
 
+
 def test_argument_basic(runner, cfgfile):
     cfgfile.write('arg = "foo"')
 
@@ -317,25 +339,9 @@ def test_argument_file(runner, cfgfile):
     def cli(arg):
         assert arg.read() == cfg
 
-    with runner.isolated_filesystem():
-        cfg = 'arg = "{}"'.format(cfgfile)
-        cfgfile.write(cfg)
-        result = runner.invoke(cli, ['--config', str(cfgfile)])
-        print(result.exception)
-        assert not result.exception
-        assert result.exit_code == 0
-
-
-def test_argument_path(runner, tmpdir, cfgfile):
-    cfgfile.write('arg = "{}"'.format(tmpdir))
-
-    @click.command()
-    @click.argument('arg')
-    @configuration_option()
-    def cli(arg):
-        assert click.format_filename(arg) == str(tmpdir)
-
+    cfg = 'arg = "{}"'.format(cfgfile)
+    cfgfile.write(cfg)
     result = runner.invoke(cli, ['--config', str(cfgfile)])
-
+    print(result.exception)
     assert not result.exception
     assert result.exit_code == 0
