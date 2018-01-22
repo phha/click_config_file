@@ -1,4 +1,6 @@
 import pytest
+import py
+import configobj
 from click_config_file import configobj_provider
 
 
@@ -17,7 +19,7 @@ def test_init_kwargs():
 def test_call_missing_file(tmpdir):
     nofile = tmpdir.join("nosuchfile")
     provider = configobj_provider()
-    with pytest.raises(Exception):
+    with pytest.raises(py.error.ENOENT):
         provider(nofile, 'name')
 
 
@@ -25,7 +27,7 @@ def test_call_broken_file(tmpdir):
     conffile = tmpdir.join('config')
     conffile.write("Ceci n'est pas un ConfigObj.")
     provider = configobj_provider()
-    with pytest.raises(Exception):
+    with pytest.raises(configobj.ParseError):
         provider(conffile, 'name')
 
 
