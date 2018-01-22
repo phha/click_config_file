@@ -101,7 +101,7 @@ def hello(name):
 Installation
 ------------
 
-`pip install git+https://github.com/phha/click_config_file`
+`pip install click-config-file`
 
 Why?
 ----
