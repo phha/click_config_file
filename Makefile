@@ -1,8 +1,8 @@
 test:
-	py.test tests
+	pipenv run py.test tests
 
 tox:
-	tox
+	pipenv run tox
 
 clean:
 	rm -rf dist/
@@ -11,9 +11,9 @@ clean:
 	rm -rf __pycache__
 
 release: tox
-	python setup.py sdist bdist_wheel upload
+	pipenv run python setup.py sdist bdist_wheel upload
 
 upload: clean release
-	twine upload dist/*
+	pipenv run twine upload dist/*
 
 .PHONY: test clean tox upload
