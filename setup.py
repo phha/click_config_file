@@ -8,6 +8,8 @@ setup(
     version='0.4.0',
     license='MIT',
     description='Configuration file support for click applications.',
+    long_description="""Easily add configuration file support to your click
+    application by adding a single no-arguments decorator.""",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
