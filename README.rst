@@ -13,13 +13,15 @@ appropriate decorator to your command without having to supply any
 mandatory arguments. It comes with a set of sensible defaults that
 should just work for most cases.
 
-Given this application::
+Given this application:
+
+.. code-block:: python
 
     @click.command()
     @click.option('--name', default='World', help='Who to greet.')
     @click_config_file.configuration_option()
     def hello(name):
-    click.echo('Hello {}!'.format(name))
+        click.echo('Hello {}!'.format(name))
 
 Running ``hello --help`` will give you this::
 
@@ -74,17 +76,19 @@ The command name is passed in order to allow for a shared configuration
 file divided by sections for each command.
 
 For example, this will read the configuration options from a shared JSON
-file::
+file:
+
+.. code-block:: python
 
     def myprovider(file_path, cmd_name):
-    with open(file_path) as config_data:
-        return json.load(config_data)[cmd_name]
+        with open(file_path) as config_data:
+            return json.load(config_data)[cmd_name]
     
     @click.command()
     @click.option('--name', default='World')
     @click_config_file.configuration_option(provider=myprovider)
     def hello(name):
-    click.echo('Hello {}!'.format(name))
+        click.echo('Hello {}!'.format(name))
 
 
 Installation
