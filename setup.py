@@ -1,5 +1,8 @@
 from setuptools import setup
 
+with open('README.rst') as readme:
+    long_description = readme.read()
+
 setup(
     name='click_config_file',
     author='Philipp Hack',
@@ -8,8 +11,7 @@ setup(
     version='0.4.0',
     license='MIT',
     description='Configuration file support for click applications.',
-    long_description="""Easily add configuration file support to your click
-    application by adding a single no-arguments decorator.""",
+    long_description=long_description,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
