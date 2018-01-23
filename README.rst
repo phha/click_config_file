@@ -68,7 +68,7 @@ By default click-config-file supports files formatted according to
 mode <http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode>`_.
 
 You can add support for additional configuration providers by setting
-the `x`provider` keyword argument. This argument expects a callable that
+the `provider` keyword argument. This argument expects a callable that
 will take the configuration file path and command name as arguments and
 returns a dictionary with the provided configuration options.
 
