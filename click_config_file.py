@@ -1,6 +1,7 @@
 import os
 import click
 import configobj
+import functools
 
 
 class configobj_provider:
@@ -17,6 +18,7 @@ class configobj_provider:
         provider will look for a corresponding section inside the
         configuration file and return only the values from that section.
     """
+
     def __init__(self, unrepr=True, section=None):
         self.unrepr = unrepr
         self.section = section
@@ -36,6 +38,7 @@ class configobj_provider:
     dict
         A dictionary containing the configuration parameters.
     """
+
     def __call__(self, file_path, cmd_name):
         config = configobj.ConfigObj(file_path, unrepr=self.unrepr)
         if self.section:
@@ -71,9 +74,11 @@ def configuration_option(*param_decls, **attrs):
         `provider(file_path, cmd_name)`. Default: `configobj_provider()`
 
     """
+
     def decorator(f):
-        def callback(ctx, param, value):
-            nonlocal cmd_name, config_file_name, saved_callback, provider
+        def callback(cmd_name, config_file_name, saved_callback, provider, ctx,
+                     param, value):
+            # nonlocal cmd_name, config_file_name, saved_callback, provider
             if not ctx.default_map:
                 ctx.default_map = {}
             if not cmd_name:
@@ -112,7 +117,9 @@ def configuration_option(*param_decls, **attrs):
         }
         attrs['type'] = click.Path(**path_params)
         saved_callback = attrs.pop('callback', None)
-        attrs['callback'] = callback
+        partial_callback = functools.partial(
+            callback, cmd_name, config_file_name, saved_callback, provider)
+        attrs['callback'] = partial_callback
         return click.option(*(param_decls or ('--config', )), **attrs)(f)
 
     return decorator
