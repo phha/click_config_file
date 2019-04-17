@@ -74,8 +74,11 @@ def configuration_option(*param_decls, **attrs):
         `provider(file_path, cmd_name)`. Default: `configobj_provider()`
 
     """
+    param_decls = param_decls or ('--config', )
+    option_name = param_decls[0]
 
     def decorator(f):
+
         def callback(cmd_name, config_file_name, saved_callback, provider, ctx,
                      param, value):
             # nonlocal cmd_name, config_file_name, saved_callback, provider
@@ -83,6 +86,8 @@ def configuration_option(*param_decls, **attrs):
                 ctx.default_map = {}
             if not cmd_name:
                 cmd_name = ctx.info_name
+
+
             default_value = os.path.join(
                 click.get_app_dir(cmd_name), config_file_name)
             param.default = default_value
@@ -91,7 +96,7 @@ def configuration_option(*param_decls, **attrs):
             try:
                 config = provider(value, cmd_name)
             except Exception as e:
-                raise click.BadOptionUsage(
+                raise click.BadOptionUsage(option_name,
                     "Error reading configuration file: {}".format(e), ctx)
             ctx.default_map.update(config)
             return saved_callback(ctx, param,
@@ -120,6 +125,6 @@ def configuration_option(*param_decls, **attrs):
         partial_callback = functools.partial(
             callback, cmd_name, config_file_name, saved_callback, provider)
         attrs['callback'] = partial_callback
-        return click.option(*(param_decls or ('--config', )), **attrs)(f)
+        return click.option(*param_decls, **attrs)(f)
 
     return decorator
