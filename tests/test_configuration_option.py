@@ -23,7 +23,7 @@ def test_defaults(runner):
     assert result.output == 'Hello\n'
 
     result = runner.invoke(cli, ('--help', ))
-    assert re.search(r'--config PATH\s+Read configuration from PATH\.',
+    assert re.search(r'--config FILE\s+Read configuration from FILE\.',
                      result.output) is not None
 
 
@@ -132,8 +132,6 @@ def test_config_precedence_envvar_not_set(runner, cfgfile):
     assert result.output == 'Hello Universe\n'
 
 
-@pytest.mark.xfail(reason="""This is a bug in click,
-              see https://github.com/pallets/click/issues/873""")
 def test_config_precedence_envvar_set(runner, cfgfile):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
@@ -182,7 +180,7 @@ def test_exists_true(runner, tmpdir):
     result = runner.invoke(cli, ('--config', str(path),))
     assert result.exception
     assert result.exit_code != 0
-    assert re.search(r'Path "{}" does not exist'.format(path),
+    assert re.search(r'File "{}" does not exist'.format(path),
                      result.output) is not None
 
     path.write("\n")
@@ -213,7 +211,7 @@ def test_custom_provider_nofile(runner):
 def test_custom_provider_raises_exception(runner):
     def mock_provider(path, name):
         assert name == 'cli'
-        raise click.BadOptionUsage('Provider')
+        raise click.BadOptionUsage('--config', 'Provider')
 
     @click.command()
     @click.option('--who')

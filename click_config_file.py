@@ -103,7 +103,7 @@ def configuration_option(*param_decls, **attrs):
                                   value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
-        attrs.setdefault('help', 'Read configuration from PATH.')
+        attrs.setdefault('help', 'Read configuration from FILE.')
         attrs.setdefault('expose_value', False)
         cmd_name = attrs.pop('cmd_name', None)
         config_file_name = attrs.pop('config_file_name', 'config')
