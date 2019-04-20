@@ -9,6 +9,7 @@ no-arguments decorator.
     :target: https://badge.fury.io/py/click-config-file
 .. image:: https://travis-ci.org/phha/click_config_file.svg?branch=master
     :target: https://travis-ci.org/phha/click_config_file
+.. image:: https://api.codacy.com/project/badge/Grade/a5f6262609314683bf2b2bc546bdaffe    :target: https://www.codacy.com/app/phha/click_config_file?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phha/click_config_file&amp;utm_campaign=Badge_Grade
 
 Basic usage
 -----------
