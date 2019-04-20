@@ -19,3 +19,4 @@ tox = {extras = ["pytest"]}
 pytest = "*"
 readme-renderer = "*"
 twine = "*"
+funcsigs = "*"

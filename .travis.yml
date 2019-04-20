@@ -1,0 +1,38 @@
+language: python
+matrix:
+  include:
+  - python: 3.6
+    env:
+      TOXENV: py26
+  - python: 3.6
+    env:
+      TOXENV: py27
+  - python: 3.6
+    env:
+      TOXENV: py32
+  - python: 3.4
+    env:
+      TOXENV: py34
+  - python: 3.5
+    env:
+      TOXENV: py35
+  - python: 3.6
+    env:
+      TOXENV: py36
+  - python: 3.7
+    dist: xenial
+    env:
+      TOXENV: py37
+  - python: pypy
+    env:
+      TOXENV: pypy
+# pipenv incompatible with pypy3; uncomment for first 2019 release
+# https://github.com/pypa/pipenv/issues/3313
+#  - python: pypy3.5
+#    env:
+#      TOXENV: pypy3
+# jython not officially supported
+
+install: pip install --upgrade pip tox
+
+script:	tox
