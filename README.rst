@@ -1,6 +1,10 @@
 Click config file
 =================
 
+.. image:: https://api.codacy.com/project/badge/Grade/907947cb7b844fc295a72c6680e26320
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/phha/click_config_file?utm_source=github.com&utm_medium=referral&utm_content=phha/click_config_file&utm_campaign=Badge_Grade_Settings
+
 Easily add configuration file support to your
 `Click <http://click.pocoo.org/5/>`_ applications by adding a single
 no-arguments decorator.
