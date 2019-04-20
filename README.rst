@@ -5,6 +5,8 @@ Easily add configuration file support to your
 `Click <http://click.pocoo.org/5/>`_ applications by adding a single
 no-arguments decorator.
 
+.. image:: https://badge.fury.io/py/click-config-file.svg
+    :target: https://badge.fury.io/py/click-config-file
 .. image:: https://travis-ci.org/phha/click_config_file.svg?branch=master
     :target: https://travis-ci.org/phha/click_config_file
 
