@@ -5,6 +5,9 @@ Easily add configuration file support to your
 `Click <http://click.pocoo.org/5/>`_ applications by adding a single
 no-arguments decorator.
 
+.. image:: https://travis-ci.org/phha/click_config_file.svg?branch=master
+    :target: https://travis-ci.org/phha/click_config_file
+
 Basic usage
 -----------
 
@@ -68,7 +71,7 @@ By default click-config-file supports files formatted according to
 mode <http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode>`_.
 
 You can add support for additional configuration providers by setting
-the `provider` keyword argument. This argument expects a callable that
+the ``provider`` keyword argument. This argument expects a callable that
 will take the configuration file path and command name as arguments and
 returns a dictionary with the provided configuration options.
 
