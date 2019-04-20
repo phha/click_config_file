@@ -35,7 +35,7 @@ class configobj_provider:
             The path to the configuration file
         cmd_name : str
             The name of the click command
-    
+
         Returns
         -------
         dict
