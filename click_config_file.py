@@ -18,28 +18,29 @@ class configobj_provider:
         provider will look for a corresponding section inside the
         configuration file and return only the values from that section.
     """
+    
 
     def __init__(self, unrepr=True, section=None):
         self.unrepr = unrepr
         self.section = section
-
-    """
-    Parse and return the configuration parameters.
-
-    Parameters
-    ----------
-    file_path : str
-        The path to the configuration file
-    cmd_name : str
-        The name of the click command
-
-    Returns
-    -------
-    dict
-        A dictionary containing the configuration parameters.
-    """
+    
 
     def __call__(self, file_path, cmd_name):
+        """
+        Parse and return the configuration parameters.
+    
+        Parameters
+        ----------
+        file_path : str
+            The path to the configuration file
+        cmd_name : str
+            The name of the click command
+
+        Returns
+        -------
+        dict
+            A dictionary containing the configuration parameters.
+        """
         config = configobj.ConfigObj(file_path, unrepr=self.unrepr)
         if self.section:
             config = config[self.section].dict()

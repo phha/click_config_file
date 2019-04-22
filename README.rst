@@ -5,6 +5,12 @@ Easily add configuration file support to your
 `Click <http://click.pocoo.org/5/>`_ applications by adding a single
 no-arguments decorator.
 
+.. image:: https://badge.fury.io/py/click-config-file.svg
+    :target: https://badge.fury.io/py/click-config-file
+.. image:: https://travis-ci.org/phha/click_config_file.svg?branch=master
+    :target: https://travis-ci.org/phha/click_config_file
+.. image:: https://api.codacy.com/project/badge/Grade/a5f6262609314683bf2b2bc546bdaffe    :target: https://www.codacy.com/app/phha/click_config_file?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phha/click_config_file&amp;utm_campaign=Badge_Grade
+
 Basic usage
 -----------
 
@@ -68,7 +74,7 @@ By default click-config-file supports files formatted according to
 mode <http://configobj.readthedocs.io/en/latest/configobj.html#unrepr-mode>`_.
 
 You can add support for additional configuration providers by setting
-the `provider` keyword argument. This argument expects a callable that
+the ``provider`` keyword argument. This argument expects a callable that
 will take the configuration file path and command name as arguments and
 returns a dictionary with the provided configuration options.
 
