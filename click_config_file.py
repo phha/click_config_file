@@ -129,7 +129,7 @@ def configuration_option_base(*param_decls, **attrs):
             partial_callback = functools.partial(
                 callback, cmd_name, config_file_name, saved_callback, provider)
             attrs['callback'] = partial_callback
-        
+
         return click.option(*param_decls, **attrs)(f)
 
     return decorator
