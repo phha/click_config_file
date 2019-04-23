@@ -33,6 +33,6 @@ matrix:
 #      TOXENV: pypy3
 # jython not officially supported
 
-install: pip install --upgrade pip tox
+install: pip install --upgrade pip tox twine
 
 script:	tox
