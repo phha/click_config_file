@@ -47,7 +47,7 @@ class configobj_provider:
         return config
 
 
-def configuration_option(*param_decls, **attrs):
+def configuration_option_base(*param_decls, **attrs):
     """
     Adds configuration file support to a click application.
 
@@ -107,7 +107,7 @@ def configuration_option(*param_decls, **attrs):
         attrs.setdefault('help', 'Read configuration from FILE.')
         attrs.setdefault('expose_value', False)
         cmd_name = attrs.pop('cmd_name', None)
-        config_file_name = attrs.pop('config_file_name', 'config')
+        config_file_name = attrs.pop('config_file_name', None)
         provider = attrs.pop('provider', configobj_provider())
         path_default_params = {
             'exists': False,
@@ -122,10 +122,17 @@ def configuration_option(*param_decls, **attrs):
             for k, v in path_default_params.items()
         }
         attrs['type'] = click.Path(**path_params)
-        saved_callback = attrs.pop('callback', None)
-        partial_callback = functools.partial(
-            callback, cmd_name, config_file_name, saved_callback, provider)
-        attrs['callback'] = partial_callback
+
+        if config_file_name is not None:
+            # Add callback only if config_file_name specified
+            saved_callback = attrs.pop('callback', None)
+            partial_callback = functools.partial(
+                callback, cmd_name, config_file_name, saved_callback, provider)
+            attrs['callback'] = partial_callback
+
         return click.option(*param_decls, **attrs)(f)
 
     return decorator
+
+
+configuration_option = functools.partial(configuration_option_base, config_file_name='config')
