@@ -185,7 +185,6 @@ def test_exists_true(runner, tmpdir):
 
     path.write("\n")
     result = runner.invoke(cli, ('--config', str(path),))
-    print(result.output)
     assert not result.exception
     assert result.exit_code == 0
 
@@ -340,6 +339,5 @@ def test_argument_file(runner, cfgfile):
     cfg = 'arg = "{}"'.format(cfgfile)
     cfgfile.write(cfg)
     result = runner.invoke(cli, ['--config', str(cfgfile)])
-    print(result.exception)
     assert not result.exception
     assert result.exit_code == 0
