@@ -1,5 +1,5 @@
 test:
-	pipenv run py.test tests
+	pipenv run python setup.py test
 
 tox:
 	pipenv run tox

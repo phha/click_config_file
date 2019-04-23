@@ -21,4 +21,6 @@ setup(
     ],
     py_modules=['click_config_file'],
     install_requires=['click >= 6.7', 'configobj >= 5.0.6'],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
 )
