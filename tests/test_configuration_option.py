@@ -5,13 +5,6 @@ import pytest
 from click_config_file import configuration_option
 
 
-@pytest.fixture
-def cfgfile(tmpdir):
-    cfgfile = tmpdir.join('config')
-    cfgfile.write('who = "Universe"')
-    return cfgfile
-
-
 def test_defaults(runner):
     @click.command()
     @configuration_option()
