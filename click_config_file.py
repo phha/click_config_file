@@ -51,15 +51,14 @@ def configuration_option_base(*param_decls, **attrs):
     """
     Adds configuration file support to a click application.
 
-    This will create an option of type `click.File` containing the path to a
-    configuration file. It will overwrite the default values for all other
-    click arguments or options with the corresponding value from the
+    This will create an option of type `click.File` expecting the path to a
+    configuration file. When specified, it overwrites the default values for
+    all other click arguments or options with the corresponding value from the
     configuration file.
 
     The default name of the option is `--config`.
-
-    By default the configuration is read from a file with the name `config`
-    inside the configuration directory as determined by `click.get_app_dir`.
+    By default, the configuration will be read from a configuration directory
+    as determined by `click.get_app_dir`.
 
     This decorator accepts the same arguments as `click.option` and
     `click.Path`. In addition, the following keyword arguments are available:
@@ -136,3 +135,11 @@ def configuration_option_base(*param_decls, **attrs):
 
 
 configuration_option = functools.partial(configuration_option_base, config_file_name='config')
+configuration_option.__doc__ = """
+Adds configuration file support to a click application.
+
+Like `configuration_option_base` but with a default file name (`config`) for
+the configuration file.  This causes the click application to search for the
+configuration file in the standard location, even if the option is not
+explicitly specified.
+"""

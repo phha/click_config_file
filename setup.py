@@ -12,6 +12,7 @@ setup(
     license='MIT',
     description='Configuration file support for click applications.',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

@@ -49,22 +49,7 @@ def test_no_callback_when_unset(runner, cfgfile):
 
     result = runner.invoke(cli)
     assert not result.exception
-    assert result.exit_code != 0
-
-def test_no_callback_when_unset(runner, cfgfile):
-    def mock_provider(path, name):
-        assert False
-
-    @click.command()
-    @click.option('--who', default='World')
-    @configuration_option_base(provider=mock_provider)
-    def cli(who):
-        assert who == 'World'
-
-    result = runner.invoke(cli)
-    assert not result.exception
     assert result.exit_code == 0
-
 
 def test_custom_callback_when_unset(runner):
     def mock_callback(ctx, param, value):
