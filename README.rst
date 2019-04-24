@@ -5,10 +5,14 @@ Easily add configuration file support to your
 `Click <http://click.pocoo.org/5/>`_ applications by adding a single
 no-arguments decorator.
 
-.. image:: https://badge.fury.io/py/click-config-file.svg
-    :target: https://badge.fury.io/py/click-config-file
-.. image:: https://travis-ci.org/phha/click_config_file.svg?branch=master
+.. image:: https://img.shields.io/pypi/v/click-config-file.svg?style=flat-square
+    :target: https://pypi.org/project/click-config-file/
+.. image:: https://img.shields.io/conda/vn/conda-forge/click-config-file.svg?style=flat-square
+    :target: https://anaconda.org/conda-forge/click-config-file
+.. image:: https://img.shields.io/travis/phha/click_config_file.svg?style=flat-square
     :target: https://travis-ci.org/phha/click_config_file
+.. image:: https://img.shields.io/codacy/grade/a5f6262609314683bf2b2bc546bdaffe.svg?style=flat-square
+    :target: https://www.codacy.com/app/phha/click_config_file
 
 Basic usage
 -----------
