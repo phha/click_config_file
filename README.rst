@@ -55,15 +55,48 @@ setting, as it should::
 
     Hello Multiverse!
 
-The default name for the configuration file option is ``--config``. If no
-``--config`` option is provided either via CLI or an environment variable,
-the module will search for a file named `config` in the appropriate
-directory for your OS.
+The default name for the configuration file option is ``--config``.
 
 Command line and environment options will override the configuration
 file options. Configuration file options override default options. So
 the resolution order for a given option is: CLI > Environment >
 Configuration file > Default.
+
+Options
+-------
+
+Although ``configuration_option`` is designed to work without any mandatory
+arguments, some optional parameters are supported:
+
+``implicit``
+  Default: ``True``
+
+  By default ``configuration_option`` will look for a configuration file
+  even if no value for the configuration option was provided either via
+  a CLI argument or an environment variable. In this case the value will
+  be set implicitly from ``cmd_name`` and ``config_file_name`` as
+  described below.
+
+  If set to ``False`` the configuration file settings will only be applied
+  when a configuration file argument is provided.
+
+``cmd_name``
+  Default: ``ctx.cmd_info``
+
+  The name of the decorated command. When implicitly creating a
+  configuration file argument, the application directory containing the
+  configuration file is resolved by calling ``click.get_app_dir(cmd_name)``.
+
+  This defaults to the name of the command as determined by click.
+
+``config_file_name``
+  Default: ``config``
+
+  When ``implicit`` is set to ``True``, this argument provides the name of the
+  configuration file inside the application directory.
+
+In addition to the arguments above, all arguments for ``click.option()`` and
+``click.File()`` are supported.
 
 Supported file formats
 ----------------------

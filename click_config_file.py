@@ -118,7 +118,7 @@ def configuration_option(*param_decls, **attrs):
     config_file_name : str
         The name of the configuration file. Default: `'config'``
     implicit: bool
-        If 'True' then implicitely create a value for the configuration option
+        If 'True' then implicitly create a value for the configuration option
         using the above parameters. If a configuration file exists in this
         path it will be applied even if no configuration option was suppplied
         as a CLI argument or environment variable.
