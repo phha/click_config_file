@@ -3,7 +3,7 @@ import click
 import configobj
 import functools
 
-__all__ = ('configobj_provider', 'configuration_option_base', 'configuration_option')
+__all__ = ('configobj_provider', 'configuration_option')
 
 
 class configobj_provider:
