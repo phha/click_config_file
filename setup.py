@@ -8,7 +8,7 @@ setup(
     author='Philipp Hack',
     author_email='philipp.hack@gmail.com',
     url='http://github.com/phha/click_config_file',
-    version='0.4.5',
+    version='0.5.0',
     license='MIT',
     description='Configuration file support for click applications.',
     long_description=long_description,
