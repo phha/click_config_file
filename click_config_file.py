@@ -48,8 +48,9 @@ class configobj_provider:
             config = config[self.section].dict()
         return config
 
-def configuration_callback(cmd_name, option_name, config_file_name, saved_callback,
-        provider, ctx, param, value):
+def configuration_callback(cmd_name, option_name, config_file_name,
+                           saved_callback, provider, implicit, ctx,
+                           param, value):
     """
     Callback for reading the config file.
 
@@ -67,13 +68,17 @@ def configuration_callback(cmd_name, option_name, config_file_name, saved_callba
         A callable that parses the configuration file and returns a dictionary
         of the configuration parameters. Will be called as
         `provider(file_path, cmd_name)`. Default: `configobj_provider()`
+    implicit : bool
+        Whether a implicit value should be applied if no configuration option
+        value was provided.
+        Default: `False`
     ctx : object
         Click context.
     """
     ctx.default_map = ctx.default_map or {}
     cmd_name = cmd_name or ctx.info_name
 
-    if config_file_name:
+    if implicit:
         default_value = os.path.join(
             click.get_app_dir(cmd_name), config_file_name)
         param.default = default_value
@@ -90,7 +95,7 @@ def configuration_callback(cmd_name, option_name, config_file_name, saved_callba
     return saved_callback(ctx, param, value) if saved_callback else value
 
 
-def configuration_option_base(*param_decls, **attrs):
+def configuration_option(*param_decls, **attrs):
     """
     Adds configuration file support to a click application.
 
@@ -100,6 +105,7 @@ def configuration_option_base(*param_decls, **attrs):
     configuration file.
 
     The default name of the option is `--config`.
+
     By default, the configuration will be read from a configuration directory
     as determined by `click.get_app_dir`.
 
@@ -108,15 +114,22 @@ def configuration_option_base(*param_decls, **attrs):
 
     cmd_name : str
         The command name. This is used to determine the configuration
-        directory. Defaults to `ctx.info_name`
+        directory. Default: `ctx.info_name`
     config_file_name : str
-        The name of the configuration file.
+        The name of the configuration file. Default: `'config'``
+    implicit: bool
+        If 'True' then implicitely create a value for the configuration option
+        using the above parameters. If a configuration file exists in this
+        path it will be applied even if no configuration option was suppplied
+        as a CLI argument or environment variable.
+        If 'False` only apply a configuration file that has been explicitely
+        specified.
+        Default: `False`
     provider : callable
         A callable that parses the configuration file and returns a dictionary
         of the configuration parameters. Will be called as
         `provider(file_path, cmd_name)`. Default: `configobj_provider()`
-
-    """
+        """
     param_decls = param_decls or ('--config', )
     option_name = param_decls[0]
 
@@ -125,8 +138,9 @@ def configuration_option_base(*param_decls, **attrs):
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from FILE.')
         attrs.setdefault('expose_value', False)
+        implicit = attrs.pop('implicit', True)
         cmd_name = attrs.pop('cmd_name', None)
-        config_file_name = attrs.pop('config_file_name', None)
+        config_file_name = attrs.pop('config_file_name', 'config')
         provider = attrs.pop('provider', configobj_provider())
         path_default_params = {
             'exists': False,
@@ -134,30 +148,17 @@ def configuration_option_base(*param_decls, **attrs):
             'dir_okay': False,
             'writable': False,
             'readable': True,
-            'resolve_path': False
+        'resolve_path': False
         }
         path_params = {
             k: attrs.pop(k, v)
             for k, v in path_default_params.items()
         }
         attrs['type'] = click.Path(**path_params)
-
         saved_callback = attrs.pop('callback', None)
         partial_callback = functools.partial(
-            configuration_callback, cmd_name, option_name, config_file_name, saved_callback, provider)
+            configuration_callback, cmd_name, option_name, config_file_name, saved_callback, provider, implicit)
         attrs['callback'] = partial_callback
-
         return click.option(*param_decls, **attrs)(f)
 
     return decorator
-
-
-configuration_option = functools.partial(configuration_option_base, config_file_name='config')
-configuration_option.__doc__ = """
-Adds configuration file support to a click application.
-
-Like `configuration_option_base` but with a default file name (`config`) for
-the configuration file.  This causes the click application to search for the
-configuration file in the standard location, even if the option is not
-explicitly specified.
-"""

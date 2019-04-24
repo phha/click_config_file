@@ -2,11 +2,11 @@ import click
 import re
 import os
 import pytest
-from click_config_file import configuration_option_base
+from click_config_file import configuration_option
 
 def test_help(runner):
     @click.command()
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli():
         click.echo("Hello")
 
@@ -20,7 +20,7 @@ def test_help(runner):
 
 def test_defaults(runner):
     @click.command()
-    @configuration_option_base(expose_value=True)
+    @configuration_option(implicit=False, expose_value=True)
     def cli(config):
         assert config is None
 
@@ -31,7 +31,7 @@ def test_defaults(runner):
 
 def test_custom_default_value(runner, cfgfile):
     @click.command()
-    @configuration_option_base(default=str(cfgfile), expose_value=True)
+    @configuration_option(implicit=False, default=str(cfgfile), expose_value=True)
     def cli(config):
         assert config == str(cfgfile)
         click.echo(config)
@@ -47,7 +47,7 @@ def test_custom_default_value(runner, cfgfile):
 def test_config_precedence_no_config(runner):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(who):
         assert who == "World"
         click.echo("Hello {}".format(who))
@@ -61,7 +61,7 @@ def test_config_value_no_replacement(runner, cfgfile):
     """Test that config does not replace variable of other name."""
     @click.command()
     @click.option('--whom', default='World', envvar='CLICK_TEST_WHO')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(whom):
         assert whom == "World"
         click.echo("Hello {}".format(whom))
@@ -75,7 +75,7 @@ def test_config_value_no_replacement(runner, cfgfile):
 
 def test_broken_config(runner, tmpdir):
     @click.command()
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli():
         pytest.fail("Callback should not be called if config is broken")
 
@@ -96,7 +96,7 @@ def test_broken_config(runner, tmpdir):
 def test_config_precedence_override_default(runner, cfgfile):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(who):
         assert who == 'Universe'
         click.echo("Hello {}".format(who))
@@ -113,7 +113,7 @@ def test_config_precedence_override_default(runner, cfgfile):
 def test_config_precedence_cli_option(runner, cfgfile):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(who):
         assert who == 'Multiverse'
         click.echo("Hello {}".format(who))
@@ -130,7 +130,7 @@ def test_config_precedence_cli_option(runner, cfgfile):
 def test_config_precedence_envvar(runner, cfgfile):
     @click.command()
     @click.option('--who', default='World', envvar='CLICK_TEST_WHO')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(who):
         assert who == 'You'
         click.echo("Hello {}".format(who))
@@ -148,7 +148,7 @@ def test_config_precedence_envvar(runner, cfgfile):
 
 def test_exists_true(runner, tmpdir):
     @click.command()
-    @configuration_option_base(exists=True)
+    @configuration_option(exists=True, implicit=False)
     def cli():
         pass
 
@@ -171,8 +171,9 @@ def test_custom_callback(runner):
         return 'bar'
 
     @click.command()
-    @configuration_option_base(
-        expose_value=True, resolve_path=False, callback=mock_callback)
+    @configuration_option(
+        implicit=False, expose_value=True,
+        resolve_path=False, callback=mock_callback)
     def cli(config):
         assert config == 'bar'
         click.echo(config)
@@ -187,7 +188,7 @@ def test_custom_callback(runner):
 
 def test_path_params_dir_okay_default(runner, tmpdir):
     @click.command()
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli():
         pytest.fail('Callback should not be invoked')
 
@@ -201,7 +202,7 @@ def test_path_params_dir_okay_default(runner, tmpdir):
 
 def test_path_params_dir_okay_true(runner, tmpdir):
     @click.command()
-    @configuration_option_base(dir_okay=True)
+    @configuration_option(dir_okay=True, implicit=False)
     def cli():
         pass
 
@@ -218,7 +219,7 @@ def test_value(runner, tmpdir):
     cfgfile = tmpdir.join('cfg')
 
     @click.command()
-    @configuration_option_base(expose_value=True)
+    @configuration_option(implicit=False, expose_value=True)
     def cli(config):
         assert str(config) == str(cfgfile)
         click.echo(config)
@@ -241,7 +242,7 @@ def test_no_callback_when_unset(runner, cfgfile):
 
     @click.command()
     @click.option('--who', default='World')
-    @configuration_option_base(provider=mock_provider)
+    @configuration_option(implicit=False, provider=mock_provider)
     def cli(who):
         assert who == 'World'
 
@@ -255,8 +256,8 @@ def test_custom_callback_when_unset(runner):
         return 'bar'
 
     @click.command()
-    @configuration_option_base(
-        expose_value=True, callback=mock_callback)
+    @configuration_option(
+        implicit=False, expose_value=True, callback=mock_callback)
     def cli(config):
         assert config == 'bar'
         click.echo(config)
@@ -277,7 +278,7 @@ def test_custom_provider(runner, cfgfile):
 
     @click.command()
     @click.option('--whom')
-    @configuration_option_base(provider=mock_provider)
+    @configuration_option(implicit=False, provider=mock_provider)
     def cli(whom):
         assert whom == 'World'
         click.echo("Hello {}".format(whom))
@@ -295,7 +296,7 @@ def test_argument_basic(runner, cfgfile):
 
     @click.command()
     @click.argument('arg')
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(arg):
         assert arg == 'foo'
         click.echo(arg)
@@ -312,7 +313,7 @@ def test_argument_variadic(runner, cfgfile):
 
     @click.command()
     @click.argument('arg', nargs=2)
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(arg):
         assert arg == ('foo', 'bar')
         for a in arg:
@@ -328,7 +329,7 @@ def test_argument_variadic(runner, cfgfile):
 def test_argument_file(runner, cfgfile):
     @click.command()
     @click.argument('arg', type=click.File())
-    @configuration_option_base()
+    @configuration_option(implicit=False)
     def cli(arg):
         assert arg.read() == cfg
 
