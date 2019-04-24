@@ -3,6 +3,8 @@ import click
 import configobj
 import functools
 
+__all__ = ('configobj_provider', 'configuration_option_base', 'configuration_option')
+
 
 class configobj_provider:
     """
@@ -46,6 +48,47 @@ class configobj_provider:
             config = config[self.section].dict()
         return config
 
+def configuration_callback(cmd_name, option_name, config_file_name, saved_callback,
+        provider, ctx, param, value):
+    """
+    Callback for reading the config file.
+
+    Also takes care of calling user specified custom callback afterwards.
+
+    cmd_name : str
+        The command name. This is used to determine the configuration directory.
+    option_name : str
+        The name of the option. This is used for error messages.
+    config_file_name : str
+        The name of the configuration file.
+    saved_callback: callable
+        User-specified callback to be called later.
+    provider : callable
+        A callable that parses the configuration file and returns a dictionary
+        of the configuration parameters. Will be called as
+        `provider(file_path, cmd_name)`. Default: `configobj_provider()`
+    ctx : object
+        Click context.
+    """
+    ctx.default_map = ctx.default_map or {}
+    cmd_name = cmd_name or ctx.info_name
+
+    if config_file_name:
+        default_value = os.path.join(
+            click.get_app_dir(cmd_name), config_file_name)
+        param.default = default_value
+        value = value or default_value
+
+    if value:
+        try:
+            config = provider(value, cmd_name)
+        except Exception as e:
+            raise click.BadOptionUsage(option_name,
+                "Error reading configuration file: {}".format(e), ctx)
+        ctx.default_map.update(config)
+
+    return saved_callback(ctx, param, value) if saved_callback else value
+
 
 def configuration_option_base(*param_decls, **attrs):
     """
@@ -67,7 +110,7 @@ def configuration_option_base(*param_decls, **attrs):
         The command name. This is used to determine the configuration
         directory. Defaults to `ctx.info_name`
     config_file_name : str
-        The name of the configuration file. Defaults to `config`
+        The name of the configuration file.
     provider : callable
         A callable that parses the configuration file and returns a dictionary
         of the configuration parameters. Will be called as
@@ -78,29 +121,6 @@ def configuration_option_base(*param_decls, **attrs):
     option_name = param_decls[0]
 
     def decorator(f):
-
-        def callback(cmd_name, config_file_name, saved_callback, provider, ctx,
-                     param, value):
-            # nonlocal cmd_name, config_file_name, saved_callback, provider
-            if not ctx.default_map:
-                ctx.default_map = {}
-            if not cmd_name:
-                cmd_name = ctx.info_name
-
-
-            default_value = os.path.join(
-                click.get_app_dir(cmd_name), config_file_name)
-            param.default = default_value
-            if not value:
-                value = default_value
-            try:
-                config = provider(value, cmd_name)
-            except Exception as e:
-                raise click.BadOptionUsage(option_name,
-                    "Error reading configuration file: {}".format(e), ctx)
-            ctx.default_map.update(config)
-            return saved_callback(ctx, param,
-                                  value) if saved_callback else value
 
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from FILE.')
@@ -122,12 +142,10 @@ def configuration_option_base(*param_decls, **attrs):
         }
         attrs['type'] = click.Path(**path_params)
 
-        if config_file_name is not None:
-            # Add callback only if config_file_name specified
-            saved_callback = attrs.pop('callback', None)
-            partial_callback = functools.partial(
-                callback, cmd_name, config_file_name, saved_callback, provider)
-            attrs['callback'] = partial_callback
+        saved_callback = attrs.pop('callback', None)
+        partial_callback = functools.partial(
+            configuration_callback, cmd_name, option_name, config_file_name, saved_callback, provider)
+        attrs['callback'] = partial_callback
 
         return click.option(*param_decls, **attrs)(f)
 
