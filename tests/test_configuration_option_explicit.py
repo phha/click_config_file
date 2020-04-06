@@ -338,3 +338,22 @@ def test_argument_file(runner, cfgfile):
     result = runner.invoke(cli, ['--config', str(cfgfile)])
     assert not result.exception
     assert result.exit_code == 0
+
+def test_read_cfg_from_file(runner, cfgfile):
+    """Test returning config file handle directly.
+
+    Note: configobj.Configobj works both with file paths and file handles (so does the default configobj_provider).
+    """
+    @click.command()
+    @click.argument('arg')
+    @configuration_option(type=click.File(), implicit=False)
+    def cli(arg):
+        click.echo(arg)
+        assert arg == 'foo'
+
+    cfg = 'arg = "foo"'
+    cfgfile.write(cfg)
+    result = runner.invoke(cli, ['--config', str(cfgfile)])
+    assert not result.exception, result.exception
+    assert result.exit_code == 0
+

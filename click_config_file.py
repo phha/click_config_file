@@ -154,7 +154,7 @@ def configuration_option(*param_decls, **attrs):
             k: attrs.pop(k, v)
             for k, v in path_default_params.items()
         }
-        attrs['type'] = click.Path(**path_params)
+        attrs['type'] = attrs.get('type', click.Path(**path_params))
         saved_callback = attrs.pop('callback', None)
         partial_callback = functools.partial(
             configuration_callback, cmd_name, option_name, config_file_name, saved_callback, provider, implicit)
