@@ -1,21 +1,16 @@
 [[source]]
-
 name = "pypi"
 verify_ssl = true
 url = "https://pypi.python.org/simple"
 
-
 [packages]
-
 click = "*"
 configobj = "*"
 
-
 [dev-packages]
-
 neovim = "*"
 ptipython = "*"
-tox = {extras = ["pytest"]}
+tox = "*"
 pytest = "*"
 readme-renderer = "*"
 twine = "*"
