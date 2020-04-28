@@ -50,3 +50,12 @@ def test_call_section(tmpdir):
     rv = provider(conffile, 'name')
     assert 'testvalue' in rv
     assert rv['testvalue'] is True
+
+def test_call_missing_section(tmpdir):
+    conffile = tmpdir.join('config')
+    conffile.write("""
+                   testvalue = True
+                   """)
+    provider = configobj_provider(section='mysection')
+    rv = provider(conffile, 'name')
+    assert 'testvalue' not in rv

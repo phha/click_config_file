@@ -21,11 +21,9 @@ class configobj_provider:
         configuration file and return only the values from that section.
     """
 
-
     def __init__(self, unrepr=True, section=None):
         self.unrepr = unrepr
         self.section = section
-
 
     def __call__(self, file_path, cmd_name):
         """
@@ -45,8 +43,9 @@ class configobj_provider:
         """
         config = configobj.ConfigObj(file_path, unrepr=self.unrepr)
         if self.section:
-            config = config[self.section].dict()
+            config = config[self.section] if self.section in config else {}
         return config
+
 
 def configuration_callback(cmd_name, option_name, config_file_name,
                            saved_callback, provider, implicit, ctx,
@@ -57,7 +56,8 @@ def configuration_callback(cmd_name, option_name, config_file_name,
     Also takes care of calling user specified custom callback afterwards.
 
     cmd_name : str
-        The command name. This is used to determine the configuration directory.
+        The command name.
+        This is used to determine the configuration directory.
     option_name : str
         The name of the option. This is used for error messages.
     config_file_name : str
@@ -148,7 +148,7 @@ def configuration_option(*param_decls, **attrs):
             'dir_okay': False,
             'writable': False,
             'readable': True,
-        'resolve_path': False
+            'resolve_path': False
         }
         path_params = {
             k: attrs.pop(k, v)
@@ -157,7 +157,8 @@ def configuration_option(*param_decls, **attrs):
         attrs['type'] = attrs.get('type', click.Path(**path_params))
         saved_callback = attrs.pop('callback', None)
         partial_callback = functools.partial(
-            configuration_callback, cmd_name, option_name, config_file_name, saved_callback, provider, implicit)
+            configuration_callback, cmd_name, option_name,
+            config_file_name, saved_callback, provider, implicit)
         attrs['callback'] = partial_callback
         return click.option(*param_decls, **attrs)(f)
 
