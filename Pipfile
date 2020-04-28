@@ -5,7 +5,7 @@ url = "https://pypi.python.org/simple"
 
 [packages]
 click = "*"
-configobj = "*"
+configobj-dev = "*"
 
 [dev-packages]
 neovim = "*"
