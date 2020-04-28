@@ -156,8 +156,7 @@ def test_exists_true(runner, tmpdir):
     result = runner.invoke(cli, ('--config', str(path),))
     assert result.exception
     assert result.exit_code != 0
-    assert re.search(r'File "{}" does not exist'.format(path),
-                     result.output) is not None
+    assert r"File '{0}' does not exist".format(path) in result.output
 
     path.write("\n")
     result = runner.invoke(cli, ('--config', str(path),))
