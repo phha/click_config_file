@@ -90,6 +90,10 @@ def configuration_callback(cmd_name, option_name, config_file_name,
         except Exception as e:
             raise click.BadOptionUsage(option_name,
                 "Error reading configuration file: {}".format(e), ctx)
+        if cmd_name and config and cmd_name in config:  # When using commands for specific commands.
+            config = config.get(cmd_name)
+        if config:  # replace 'command-name' with 'command_name'
+            config = {k.replace('-', '_'): v for k, v in config.items()}
         ctx.default_map.update(config)
 
     return saved_callback(ctx, param, value) if saved_callback else value
