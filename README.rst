@@ -85,7 +85,7 @@ arguments, some optional parameters are supported:
   when a configuration file argument is provided.
 
 ``cmd_name``
-  Default: ``ctx.cmd_info``
+  Default: ``ctx.info_name``
 
   The name of the decorated command. When implicitly creating a
   configuration file argument, the application directory containing the
