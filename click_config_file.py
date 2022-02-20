@@ -47,9 +47,23 @@ class configobj_provider:
         return config
 
 
-def configuration_callback(cmd_name, option_name, config_file_name,
-                           saved_callback, provider, implicit, ctx,
-                           param, value):
+configuration_file_path = None
+
+
+def get_configuration_file_path(configuration_dir, cmd_name, config_file_name):
+    """Getting the file path of the configuration"""
+    configuration_dir = configuration_dir if configuration_dir else click.get_app_dir(cmd_name)
+    return os.path.join(
+        configuration_dir,
+        config_file_name
+    )
+
+
+def configuration_callback(
+        cmd_name, option_name, config_file_name,
+        saved_callback, provider, implicit, ctx,
+        param, value, configuration_dir
+):
     """
     Callback for reading the config file.
 
@@ -74,13 +88,15 @@ def configuration_callback(cmd_name, option_name, config_file_name,
         Default: `False`
     ctx : object
         Click context.
+    configuration_dir: str or Path:
+        The directory which should contain all the config files.
     """
+    global configuration_file_path
     ctx.default_map = ctx.default_map or {}
     cmd_name = cmd_name or ctx.info_name
 
     if implicit:
-        default_value = os.path.join(
-            click.get_app_dir(cmd_name), config_file_name)
+        default_value = configuration_file_path = get_configuration_file_path(configuration_dir, cmd_name, config_file_name)
         param.default = default_value
         value = value or default_value
 
@@ -89,7 +105,11 @@ def configuration_callback(cmd_name, option_name, config_file_name,
             config = provider(value, cmd_name)
         except Exception as e:
             raise click.BadOptionUsage(option_name,
-                "Error reading configuration file: {}".format(e), ctx)
+                                       "Error reading configuration file: {}".format(e), ctx)
+        if cmd_name and config and cmd_name in config:  # When using commands for specific commands.
+            config = config.get(cmd_name)
+        if config:  # replace 'command-name' with 'command_name'
+            config = {k.replace('-', '_'): v for k, v in config.items()}
         ctx.default_map.update(config)
 
     return saved_callback(ctx, param, value) if saved_callback else value
@@ -130,16 +150,16 @@ def configuration_option(*param_decls, **attrs):
         of the configuration parameters. Will be called as
         `provider(file_path, cmd_name)`. Default: `configobj_provider()`
         """
-    param_decls = param_decls or ('--config', )
+    param_decls = param_decls or ('--config',)
     option_name = param_decls[0]
 
     def decorator(f):
-
         attrs.setdefault('is_eager', True)
         attrs.setdefault('help', 'Read configuration from FILE.')
         attrs.setdefault('expose_value', False)
         implicit = attrs.pop('implicit', True)
         cmd_name = attrs.pop('cmd_name', None)
+        configuration_dir = attrs.pop('configuration_dir', None)
         config_file_name = attrs.pop('config_file_name', 'config')
         provider = attrs.pop('provider', configobj_provider())
         path_default_params = {
@@ -157,8 +177,15 @@ def configuration_option(*param_decls, **attrs):
         attrs['type'] = attrs.get('type', click.Path(**path_params))
         saved_callback = attrs.pop('callback', None)
         partial_callback = functools.partial(
-            configuration_callback, cmd_name, option_name,
-            config_file_name, saved_callback, provider, implicit)
+            configuration_callback,
+            cmd_name,
+            option_name,
+            config_file_name,
+            saved_callback,
+            provider,
+            implicit,
+            configuration_dir=configuration_dir
+        )
         attrs['callback'] = partial_callback
         return click.option(*param_decls, **attrs)(f)
 
