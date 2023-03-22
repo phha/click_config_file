@@ -90,6 +90,19 @@ def configuration_callback(cmd_name, option_name, config_file_name,
         except Exception as e:
             raise click.BadOptionUsage(option_name,
                 "Error reading configuration file: {}".format(e), ctx)
+
+        valid_params = [
+            p.name for p in ctx.command.params if p.name != option_name
+        ]
+        specified_params = list(config.keys())
+        unknown_params = set(specified_params).difference(set(valid_params))
+
+        if unknown_params:
+            raise click.BadParameter(
+                f'Invalid configuration file, the following keys are not '
+                f'supported: {unknown_params}', ctx, param
+            )
+
         ctx.default_map.update(config)
 
     return saved_callback(ctx, param, value) if saved_callback else value
