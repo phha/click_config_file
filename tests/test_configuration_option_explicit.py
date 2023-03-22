@@ -31,13 +31,14 @@ def test_defaults(runner):
 
 def test_custom_default_value(runner, cfgfile):
     @click.command()
+    @click.option('--who')
     @configuration_option(implicit=False, default=str(cfgfile), expose_value=True)
-    def cli(config):
+    def cli(who, config):
         assert config == str(cfgfile)
         click.echo(config)
 
     result = runner.invoke(cli)
-    assert not result.exception
+    assert not result.exception, result.output
     assert result.output == ''.join((
         str(cfgfile.realpath()),
         '\n',
@@ -60,9 +61,10 @@ def test_config_precedence_no_config(runner):
 def test_config_value_no_replacement(runner, cfgfile):
     """Test that config does not replace variable of other name."""
     @click.command()
+    @click.option('--who')
     @click.option('--whom', default='World', envvar='CLICK_TEST_WHO')
     @configuration_option(implicit=False)
-    def cli(whom):
+    def cli(who, whom):
         assert whom == "World"
         click.echo("Hello {}".format(whom))
 
@@ -72,6 +74,7 @@ def test_config_value_no_replacement(runner, cfgfile):
     ))
     assert not result.exception
     assert result.output == 'Hello World\n'
+
 
 def test_broken_config(runner, tmpdir):
     @click.command()
@@ -88,6 +91,25 @@ def test_broken_config(runner, tmpdir):
     ))
     assert re.search(r'Error reading configuration file',
                      result.output) is not None
+    assert result.exception
+    assert result.exit_code != 0
+
+
+def test_config_unknown_parameters(runner, cfgfile):
+    """Test that the command fails if the configuration file contains unknown parameters."""
+    @click.command()
+    @configuration_option(implicit=False)
+    def cli():
+        pass
+
+    result = runner.invoke(cli, (
+        '--config',
+        str(cfgfile),
+    ))
+    assert re.search(
+        r"Invalid configuration file, the following keys are not supported: {'who'}",
+        result.output
+    ) is not None
     assert result.exception
     assert result.exit_code != 0
 
